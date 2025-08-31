@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# ChatBotToBeValidator
-To validate the format of the verb to be with regular expressions
-=======
 
 ## Getting Started
 
@@ -31,4 +27,3 @@ Here's the basic workflow:
         If so, is that form of the verb correctly matched with the subject (e.g., "I am" is correct, but "I are" is not).
 
     3.Provide a result: Based on the analysis, the program should give the user a clear answer. It could say "Correct" if the sentence is valid or "Incorrect" if it's not.
->>>>>>> develop
