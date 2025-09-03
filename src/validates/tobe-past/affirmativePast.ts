@@ -18,7 +18,7 @@ export function validateAffirmativePast(sentence: string): ValidationResult {
     };
   }
 
-  if (!cleanSentence.endsWith('.')) {
+  if  (!/\.$/.test(cleanSentence)) {
     errors.push("Sentence should end with a period (.)");
     isValid = false;
   }
