@@ -1,21 +1,33 @@
 import { validateAffirmativePast } from "@/validates/tobe-past/affirmativePast";
+import { validateInterrogativePast } from "@/validates/tobe-past/interrogativePast";
+import { validateNegativePast } from "@/validates/tobe-past/negativePast";
+import { validateAffirmativePresent } from "@/validates/tobe-present/affirmativePresent";
+import { validateNegativePresent } from "@/validates/tobe-present/negativePresent";
 import { ExtractName } from "@/validates/validatedName";
 import { Params } from "react-chatbotify";
 
+const OptionsYesOrNot = ["✔️ Yes", "❌ Not"];
+const Options = ["📅 Past", "🕐 Present"];
+const OptionsForms = ["✅ Affirmative", "⛔ Negative", "❔ Interrogative"];
 
-const OptionsYesOrNot = [
-  "✔️ Yes",
-  "❌ Not",
-];
-const Options = [
-  "📅 Past",
-  "🕐 Present",
-];
-const OptionsForms = [
-  "✅ Affirmative",
-  "⛔ Negative",
-  "❔ Interrogative",
-];
+//  Función genérica con tense + type
+function generateRetryForSentence(
+  tense: "past" | "present",
+  type: "affirmative" | "interrogative" | "negative"
+) {
+  return {
+    message: "Do you want to try again?",
+    options: OptionsYesOrNot,
+    chatDisabled: true,
+    path: (params: Params) => {
+      if (params.userInput.includes("Yes")) {
+        return `validate_${tense}_${type}`;
+      } else {
+        return "end";
+      }
+    },
+  };
+}
 
 export const flow = {
   start: {
@@ -34,7 +46,6 @@ export const flow = {
 
   questions: {
     message: "I am responsible for validating sentences that use the verb “to be”. Would you like me to help you validate a sentence?",
-
     options: OptionsYesOrNot,
     chatDisabled: true,
     path: (params: Params) => {
@@ -48,7 +59,6 @@ export const flow = {
 
   questions_2: {
     message: "Would you like to validate another sentence?",
-
     options: OptionsYesOrNot,
     chatDisabled: true,
     path: (params: Params) => {
@@ -59,19 +69,16 @@ export const flow = {
       }
     },
   },
-  questions_3: {
-    message: "Do you want to try again?",
 
-    options: OptionsYesOrNot,
-    chatDisabled: true,
-    path: (params: Params) => {
-      if (params.userInput.includes('Yes')) {
-        return "validate_past_affirmative";
-      } else {
-        return "end";
-      }
-    },
-  },
+  // Preguntas de reintento (Past)
+  questions_3_affirmative: generateRetryForSentence("past", "affirmative"),
+  questions_3_interrogative: generateRetryForSentence("past", "interrogative"),
+  questions_3_negative: generateRetryForSentence("past", "negative"),
+
+  //  Preguntas de reintento (Present)
+  questions_3_present_affirmative: generateRetryForSentence("present", "affirmative"),
+  questions_3_present_interrogative: generateRetryForSentence("present", "interrogative"),
+  questions_3_present_negative: generateRetryForSentence("present", "negative"),
 
   options_yes: {
     transition: { duration: 100 },
@@ -131,13 +138,41 @@ export const flow = {
 
   // Validadores para Presente
   validate_present_affirmative: {
-    message: "present afirmative.",
-    chatDisabled: false
+    message: "Perfect! Now write an affirmative sentence using 'to be' in present tense. For example: 'I am happy' or 'She is a teacher'.",
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateAffirmativePresent(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateAffirmativePresent(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_present_affirmative";
+      }
+    },
   },
 
   validate_present_negative: {
     message: "present negative",
-    chatDisabled: false
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateNegativePresent(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateNegativePresent(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_present_negative";
+      }
+    },
   },
 
   validate_present_interrogative: {
@@ -150,40 +185,63 @@ export const flow = {
     message: "Perfect! Now write an affirmative sentence using 'to be' in past tense. For example: 'I was happy' or 'She was a teacher'.",
     chatDisabled: false,
     function: async (params: Params) => {
-   
       const result = validateAffirmativePast(params.userInput);
-    
       if (params.injectMessage) {
         await params.injectMessage(result.message);
       }
     },
-    
     path: (params: Params) => {
       const result = validateAffirmativePast(params.userInput);
-
       if (result.isValid) {
         return "questions_2";
       } else {
-        return "questions_3";
+        return "questions_3_affirmative";
       }
     },
   },
 
   validate_past_negative: {
-    message: "Perfect! Now write a negative sentence using 'to be' in past tense. For example: 'I was not happy' or 'She was not a teacher'.",
-    chatDisabled: false
+    message:
+      "Perfect! Now write a negative sentence using 'to be' in past tense. For example: 'I was not happy' or 'She was not a teacher'.",
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateNegativePast(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateNegativePast(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_negative";
+      }
+    },
   },
 
   validate_past_interrogative: {
-    message: "Perfect! Now write an interrogative sentence using 'to be' in past tense. For example: 'Were you happy?' or 'Was she a teacher?'.",
-    chatDisabled: false
+    message:
+      "Perfect! Now write an interrogative sentence using 'to be' in past tense. For example: 'Were you happy?' or 'Was she a teacher?'.",
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateInterrogativePast(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateInterrogativePast(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_interrogative";
+      }
+    },
   },
 
-
-
-
   end: {
-    message: "bay",
+    message: "bye",
     chatDisabled: true,
     transition: { duration: 1000 },
     path:"questions_2",

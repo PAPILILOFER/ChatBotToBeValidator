@@ -9,7 +9,7 @@ export function validateAffirmativePast(sentence: string): ValidationResult {
   let isValid = true;
 
   const cleanSentence = sentence.trim();
-  
+
   if (!cleanSentence) {
     return {
       isValid: false,
@@ -18,75 +18,74 @@ export function validateAffirmativePast(sentence: string): ValidationResult {
     };
   }
 
-  if (!cleanSentence.endsWith('.')) {
+  if (!/\.$/.test(cleanSentence)) {
     errors.push("Sentence should end with a period (.)");
     isValid = false;
   }
-
 
   if (!/^[A-Z]/.test(cleanSentence)) {
     errors.push("Sentences should begin with a capital letter.");
     isValid = false;
   }
 
-  // Patrones para oraciones afirmativas en pasado
   const patterns = [
-    // I was + complement
-    /^I\s+was\s+[^.!?]+\.$/i,
-    
-    // He/She/It was + complement
-    /^(He|She|It)\s+was\s+[^.!?]+\.$/i,
-    
-    // We/You/They were + complement
-    /^(We|You|They)\s+were\s+[^.!?]+\.$/i,
-    
-    // Nombres propios + was/were + complement
-    /^[A-Z][a-z]+\s+(was|were)\s+[^.!?]+\.$/,
-    
-    // The + sustantivo + was/were + complement
-    /^The\s+[a-z]+\s+(was|were)\s+[^.!?]+\.$/i,
-    
-    // A/An + sustantivo + was/were + complement
-    /^[Aa]n?\s+[a-z]+\s+(was|were)\s+[^.!?]+\.$/i
+    /^(I|He|She|It|This|That)\ was [A-Za-z ]+\.$/,
+    /^(We|You|They|These|Those)\ were [A-Za-z ]+\.$/,
+    /^[A-Z][a-z]+ was [A-Za-z ]+\.$/,
+    /^The [a-z]+ (was|were) [A-Za-z ]+\.$/,
   ];
 
-  // Verificar si coincide con algún patrón
   const matchesPattern = patterns.some(pattern => pattern.test(cleanSentence));
-  
+
   if (!matchesPattern) {
     errors.push("Sentence structure should be: Subject + was/were + complement");
     isValid = false;
   }
 
-  // Verificar que use was/were (pasado)
-  if (!/\b(was|were)\b/i.test(cleanSentence)) {
-    errors.push("Use 'was' or 'were' for past tense (not 'am', 'is', 'are')");
+  if (!/ (was|were) /.test(cleanSentence)) {
+    errors.push("Use 'was' or 'were' for past tense, separated by spaces (not 'am', 'is', 'are', or joined words like 'Iwas').");
     isValid = false;
   }
 
-  // Verificar concordancia
-  const hasWas = /\bwas\b/i.test(cleanSentence);
-  const hasWere = /\bwere\b/i.test(cleanSentence);
-  
+  const hasWas = / was /.test(cleanSentence);
+  const hasWere = / were /.test(cleanSentence);
+
   if (hasWas && hasWere) {
     errors.push("Use either 'was' or 'were', not both");
     isValid = false;
   }
 
   if (hasWas) {
-    // was debe usarse con I, he, she, it, nombres singulares
-    const subject = cleanSentence.match(/^([A-Z][a-z]+)/)?.[1] || '';
-    if (['We', 'You', 'They'].includes(subject)) {
+    if (/^(We|You|They|These|Those) was /.test(cleanSentence)) {
       errors.push("'We', 'You', 'They' should use 'were', not 'was'");
       isValid = false;
     }
   }
 
   if (hasWere) {
-    // were debe usarse con we, you, they, nombres plurales
-    const subject = cleanSentence.match(/^([A-Z][a-z]+)/)?.[1] || '';
-    if (['I', 'He', 'She', 'It'].includes(subject)) {
+    if (/^(I|He|She|It|This|That) were /.test(cleanSentence)) {
       errors.push("'I', 'He', 'She', 'It' should use 'was', not 'were'");
+      isValid = false;
+    }
+  }
+
+  if (/ (was|were) not /.test(cleanSentence)) {
+    errors.push("This sentence is negative, not affirmative. Remove 'not' for affirmative past tense.");
+    isValid = false;
+  }
+
+  const theMatch = cleanSentence.match(/^The ([a-z]+) (was|were) /);
+  if (theMatch) {
+    const noun = theMatch[1];
+    const verb = theMatch[2];
+    const isPlural = /^[a-z]+s$/.test(noun);
+
+    if (isPlural && verb === "was") {
+      errors.push(`'The ${noun}' is plural, so use 'were', not 'was'`);
+      isValid = false;
+    }
+    if (!isPlural && verb === "were") {
+      errors.push(`'The ${noun}' is singular, so use 'was', not 'were'`);
       isValid = false;
     }
   }
