@@ -1,5 +1,8 @@
 import { validateAffirmativePast } from "@/validates/tobe-past/affirmativePast";
 import { validateInterrogativePast } from "@/validates/tobe-past/interrogativePast";
+import { validateNegativePast } from "@/validates/tobe-past/negativePast";
+import { validateAffirmativePresent } from "@/validates/tobe-present/affirmativePresent";
+import { validateNegativePresent } from "@/validates/tobe-present/negativePresent";
 import { ExtractName } from "@/validates/validatedName";
 import { Params } from "react-chatbotify";
 
@@ -135,13 +138,41 @@ export const flow = {
 
   // Validadores para Presente
   validate_present_affirmative: {
-    message: "present affirmative.",
-    chatDisabled: false
+    message: "Perfect! Now write an affirmative sentence using 'to be' in present tense. For example: 'I am happy' or 'She is a teacher'.",
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateAffirmativePresent(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateAffirmativePresent(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_present_affirmative";
+      }
+    },
   },
 
   validate_present_negative: {
     message: "present negative",
-    chatDisabled: false
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateNegativePresent(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateNegativePresent(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_present_negative";
+      }
+    },
   },
 
   validate_present_interrogative: {
@@ -173,7 +204,20 @@ export const flow = {
     message:
       "Perfect! Now write a negative sentence using 'to be' in past tense. For example: 'I was not happy' or 'She was not a teacher'.",
     chatDisabled: false,
-    path: () => "questions_3_negative"
+    function: async (params: Params) => {
+      const result = validateNegativePast(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateNegativePast(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_negative";
+      }
+    },
   },
 
   validate_past_interrogative: {
