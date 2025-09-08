@@ -24,44 +24,70 @@ export function validateInterrogativePast(sentence: string): ValidationResult {
     isValid = false;
   }
 
-  if (!/^(Was|Were)\b/i.test(cleanSentence)) {
+  const startsWithWas = /^Was /.test(cleanSentence);
+  const startsWithWere = /^Were /.test(cleanSentence);
+  
+  if (!startsWithWas && !startsWithWere) {
     errors.push("Interrogative sentences in past tense must start with 'Was' or 'Were'");
     isValid = false;
   }
 
- const patterns = [
-  /^Was\s+(I|he|she|it|[A-Z][a-z]+)\s+.+\?$/i,
-  /^Were\s+(we|you|they|[A-Z][a-z]+s?)\s+.+\?$/i,
-];
+  if (startsWithWas && startsWithWere) {
+    errors.push("Use either 'Was' or 'Were', not both");
+    isValid = false;
+  }
 
-const matchesPattern = patterns.some((regex) => regex.test(cleanSentence));
+  const patterns = [
+    /^Was (i|he|she|it|this|that) [A-Za-z ]+ \?$/,
+    /^Were (we|you|they|these|those) [A-Za-z ]+ \?$/,
+    /^Was [A-Z][a-z]+ [A-Za-z ]+ \?$/,
+    /^Were [A-Z][a-z]+ [A-Za-z ]+ \?$/,
+    /^Was the [a-z]+ [A-Za-z ]+ \?$/,
+    /^Were the [a-z]+ [A-Za-z ]+ \?$/,
+  ];
 
-
+  const matchesPattern = patterns.some((pattern) => pattern.test(cleanSentence));
+  
   if (!matchesPattern) {
+    if (!/^[A-Z]/.test(cleanSentence)) {
+      errors.push("Sentences should begin with a capital letter.");
+    }
     errors.push("Sentence structure should be: Was/Were + Subject + Complement + ?");
     isValid = false;
   }
 
-
-  const subjectMatch = cleanSentence.match(/^(Was|Were)\s+(\w+)/i);
-  if (subjectMatch) {
-    const verb = subjectMatch[1];
-    const subject = subjectMatch[2];
-
-    if (verb.toLowerCase() === "was" && ["We", "You", "They"].includes(subject)) {
-      errors.push(`'${subject}' should use 'Were', not 'Was'`);
-      isValid = false;
-    }
-
-    if (verb.toLowerCase() === "were" && ["I", "He", "She", "It"].includes(subject)) {
-      errors.push(`'${subject}' should use 'Was', not 'Were'`);
+  if (startsWithWas) {
+    if (/^Was (we|you|they|these|those) /.test(cleanSentence)) {
+      errors.push("'we', 'you', 'they' should use 'Were', not 'Was'");
       isValid = false;
     }
   }
 
-  if (/\bwas\b/i.test(cleanSentence) && /\bwere\b/i.test(cleanSentence)) {
-    errors.push("Use either 'Was' or 'Were', not both");
+  if (startsWithWere) {
+    if (/^Were (i|he|she|it|this|that) /.test(cleanSentence)) {
+      errors.push("'i', 'he', 'she', 'it' should use 'Was', not 'Were'");
+      isValid = false;
+    }
+  }
+
+  if (/^Was The /.test(cleanSentence) || /^Were The /.test(cleanSentence)) {
+    errors.push("Use 'the' in lowercase, not 'The'");
     isValid = false;
+  }
+
+  const theMatch = cleanSentence.match(/^(Was|Were) the ([a-z]+) /);
+  if (theMatch) {
+    const verb = theMatch[1];
+    const noun = theMatch[2];
+    const isPlural = /^[a-z]+s$/.test(noun);
+
+    if (verb === "Was" && isPlural) {
+      errors.push(`'The ${noun}' is plural, so use 'Were', not 'Was'`);
+      isValid = false;
+    } else if (verb === "Were" && !isPlural) {
+      errors.push(`'The ${noun}' is singular, so use 'Was', not 'Were'`);
+      isValid = false;
+    }
   }
 
   let message = "";         
