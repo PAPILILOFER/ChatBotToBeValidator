@@ -1,56 +1,47 @@
-"use client"
+"use client";
+import { useRouter } from "next/navigation";
+import { LuMessageCircle } from "react-icons/lu";
+export default function HomePage() {
+  const router = useRouter();
 
+  const handleRedirect = () => {
+    router.push("/chatbot");
+  };
 
-import { flow } from "@/chatBot/chatbotFlow";
-import ChatBot from "react-chatbotify";
-
-
-
-const ChatBotValidatorPage = () => {
- 
   return (
-    <div className="flex w-full h-[100vh] justify-center items-center">
-      <ChatBot  styles={{    botBubbleStyle:{backgroundColor: "#42b0c5"},
-      userBubbleStyle:{backgroundColor:"#8b93fb"}}}
-        settings={{
-          general: {
-            embedded: true,
-          },
-          chatWindow: {
-            defaultOpen: true,
-          },
-          header: {
-            title: (
-              <span
-                style={{
-                  fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                BMO BOT
-              </span>
-            ),
-            avatar: "/avatar/chat-avatar.png",
-            buttons: [],
+    <section
+      className="py-16 px-4 sm:px-6 lg:px-8 min-h-screen"
+      style={{ background: "linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%)" }}
+    >
+      <div className="max-w-md mx-auto">
+        <div className="flex flex-col items-center text-center space-y-6">
+          {/* Icon */}
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <LuMessageCircle className="w-8 h-8 text-primary" />
+          </div>
 
-          },
-          userBubble: { showAvatar: true },
-          botBubble: { showAvatar: true, avatar: "/avatar/chat-avatar.png", },
-          chatInput: { botDelay: 1500 },
-    
-          
-          footer: {
-            text: "",
-            buttons: []
-          },
-          notification: {
-            disabled: true
-          }
-        }}
-        flow={flow}
-      />
-    </div>
+          {/* Content */}
+        <div className="space-y-3">
+  <h2 className="text-2xl font-bold text-gray-900">Comienza a chatear con el chat</h2>
+  <p className="text-gray-700 text-pretty">
+    Practica y valida tus conocimientos del verbo "to be" con nuestro chatbot interactivo.
+  </p>
+</div>
+
+          {/* CTA Button */}
+          <button
+            onClick={handleRedirect}
+            className="px-8 py-3 text-lg font-semibold w-full rounded-lg shadow-md transition-colors cursor-pointer hover:opacity-90"
+            style={{
+              background: "linear-gradient(90deg, #42b0c5 0%, #8b93fb 100%)",
+              color: "#fff",
+              border: "none",
+            }}
+          >
+            Comenzar Ahora
+          </button>
+        </div>
+      </div>
+    </section>
   );
-};
-export default ChatBotValidatorPage
+}
