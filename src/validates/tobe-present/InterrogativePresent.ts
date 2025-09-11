@@ -1,0 +1,125 @@
+interface ValidationResult {
+  isValid: boolean;
+  message: string;
+  errors: string[];
+}
+
+export function validateInterrogativePresent(sentence: string): ValidationResult {
+  const errors: string[] = [];
+  let isValid = true;
+
+  const cleanSentence = sentence.trim();
+
+  if (!cleanSentence) {
+    return {
+      isValid: false,
+      message: "❌ Please write a sentence.",
+      errors: ["Empty sentence"]
+    };
+  }
+
+  if (!/\?$/.test(cleanSentence)) {
+    errors.push("Interrogative sentence should end with a question mark (?)");
+    isValid = false;
+  }
+
+  if (!/^[A-Z]/.test(cleanSentence)) {
+    errors.push("Sentences should begin with a capital letter.");
+    isValid = false;
+  }
+
+  const patterns = [
+    /^Am I [A-Za-z ]+\?$/,
+    /^Is (he|she|it|this|that|[A-Z][a-z]+)( [A-Za-z]+)? [A-Za-z ]+\?$/,
+    /^Are (we|you|they|these|those|[A-Z][a-z]+( [A-Za-z]+)?) [A-Za-z ]+\?$/,
+    /^(What|Where|When|Why|How|Who) \b(am|is|are)\b [A-Za-z ]+\?$/,
+    /^How (old|tall|much|many) \b(am|is|are)\b [A-Za-z ]+\?$/
+  ];
+
+  const matchesPattern = patterns.some(pattern => pattern.test(cleanSentence));
+
+  if (!matchesPattern) {
+    errors.push("Interrogative sentence structure should be: Am/Is/Are + subject + complement? or Question word + am/is/are + subject + complement?");
+    isValid = false;
+  }
+
+
+  if (!/\b(am|is|are)\b/i.test(cleanSentence)) {
+    errors.push("Use 'am', 'is', or 'are' for present tense interrogative.");
+    isValid = false;
+  }
+
+  const hasAm = /\bam\b/i.test(cleanSentence);
+  const hasIs = /\bis\b/i.test(cleanSentence);
+  const hasAre = /\bare\b/i.test(cleanSentence);
+
+  const verbCount = [hasAm, hasIs, hasAre].filter(Boolean).length;
+  if (verbCount > 1) {
+    errors.push("Use only one verb: 'am', 'is', or 'are'");
+    isValid = false;
+  }
+
+
+  if (hasAm && !/^Am I\b/i.test(cleanSentence)) {
+    errors.push("Only 'I' can use 'Am' in interrogative form (use 'Am I ...?').");
+    isValid = false;
+  }
+
+  if (hasIs) {
+    if (/^Is (we|you|they|these|those)\b/i.test(cleanSentence)) {
+      errors.push("'We', 'You', 'They' should use 'Are', not 'Is'.");
+      isValid = false;
+    }
+    if (/^Is I\b/i.test(cleanSentence)) {
+      errors.push("'I' should use 'Am', not 'Is'.");
+      isValid = false;
+    }
+  }
+
+  if (hasAre) {
+    if (/^Are (he|she|it|this|that|I)\b/i.test(cleanSentence)) {
+      errors.push("'He', 'She', 'It', 'I' should not use 'Are' — use 'Is' or 'Am'.");
+      isValid = false;
+    }
+  }
+
+
+  if (/\b(was|were)\b/i.test(cleanSentence)) {
+    errors.push("This sentence is in past tense, not present. Use 'am', 'is', or 'are' for present tense interrogative.");
+    isValid = false;
+  }
+
+ 
+  if (/\b(am not|is not|are not|am't|isn't|aren't)\b/i.test(cleanSentence)) {
+    errors.push("This sentence seems negative. For simple present interrogative remove 'not' (or use the correct negative question form).");
+    isValid = false;
+  }
+
+  const theMatch = cleanSentence.match(/^(Is|Are) the ([a-z]+) /i);
+  if (theMatch) {
+    const verb = theMatch[1].toLowerCase();
+    const noun = theMatch[2].toLowerCase();
+    const isPlural = /^[a-z]+s$/.test(noun);
+    if (isPlural && verb === "is") {
+      errors.push(`'The ${noun}' is plural, so use 'Are', not 'Is'`);
+      isValid = false;
+    }
+    if (!isPlural && verb === "are") {
+      errors.push(`'The ${noun}' is singular, so use 'Is', not 'Are'`);
+      isValid = false;
+    }
+  }
+
+  let message = "";
+  if (isValid) {
+    message = "✅ Excellent! Your interrogative sentence is correct. It follows the pattern: Am/Is/Are + subject + complement?";
+  } else {
+    message = "❌ Please correct the following errors:\n" + errors.map(error => `• ${error}`).join('\n');
+  }
+
+  return {
+    isValid,
+    message,
+    errors
+  };
+}
