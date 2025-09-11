@@ -2,6 +2,7 @@ import { validateAffirmativePast } from "@/validates/tobe-past/affirmativePast";
 import { validateInterrogativePast } from "@/validates/tobe-past/interrogativePast";
 import { validateNegativePast } from "@/validates/tobe-past/negativePast";
 import { validateAffirmativePresent } from "@/validates/tobe-present/affirmativePresent";
+import { validateInterrogativePresent } from "@/validates/tobe-present/InterrogativePresent";
 import { validateNegativePresent } from "@/validates/tobe-present/negativePresent";
 import { ExtractName } from "@/validates/validatedName";
 import { Params } from "react-chatbotify";
@@ -10,7 +11,6 @@ const OptionsYesOrNot = ["✔️ Yes", "❌ Not"];
 const Options = ["📅 Past", "🕐 Present"];
 const OptionsForms = ["✅ Affirmative", "⛔ Negative", "❔ Interrogative"];
 
-//  Función genérica con tense + type
 function generateRetryForSentence(
   tense: "past" | "present",
   type: "affirmative" | "interrogative" | "negative"
@@ -175,11 +175,24 @@ export const flow = {
     },
   },
 
-  validate_present_interrogative: {
-    message: "present interrogative",
-    chatDisabled: false
+ validate_present_interrogative: {
+    message: "Perfect! Now write an interrogative sentence using 'to be' in present tense. For example: 'Are you happy?' or 'Is she a teacher?'.",
+    chatDisabled: false,
+    function: async (params: Params) => {
+      const result = validateInterrogativePresent(params.userInput);
+      if (params.injectMessage) {
+        await params.injectMessage(result.message);
+      }
+    },
+    path: (params: Params) => {
+      const result = validateInterrogativePresent(params.userInput);
+      if (result.isValid) {
+        return "questions_2";
+      } else {
+        return "questions_3_present_interrogative";
+      }
+    },
   },
-
   // Validadores para Pasado
   validate_past_affirmative: {
     message: "Perfect! Now write an affirmative sentence using 'to be' in past tense. For example: 'I was happy' or 'She was a teacher'.",
