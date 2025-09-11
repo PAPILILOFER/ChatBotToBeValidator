@@ -43,14 +43,14 @@ export function validateInterrogativePresent(sentence: string): ValidationResult
     isValid = false;
   }
 
-  if (!/(am|is|are)/i.test(cleanSentence)) {
+  if (!/(am|is|are)/.test(cleanSentence)) {
     errors.push("Use 'am', 'is', or 'are' for present tense interrogative.");
     isValid = false;
   }
 
-  const hasAm = /am/i.test(cleanSentence);
-  const hasIs = /is/i.test(cleanSentence);
-  const hasAre = /are/i.test(cleanSentence);
+  const hasAm = /am/.test(cleanSentence);
+  const hasIs = /is/.test(cleanSentence);
+  const hasAre = /are/.test(cleanSentence);
 
   const verbCount = [hasAm, hasIs, hasAre].filter(Boolean).length;
   if (verbCount > 1) {
@@ -58,40 +58,40 @@ export function validateInterrogativePresent(sentence: string): ValidationResult
     isValid = false;
   }
 
-  if (hasAm && !/^Am I/i.test(cleanSentence)) {
+  if (hasAm && !/^Am I/.test(cleanSentence)) {
     errors.push("Only 'I' can use 'Am' in interrogative form (use 'Am I ...?').");
     isValid = false;
   }
 
   if (hasIs) {
-    if (/^Is (we|you|they|these|those)/i.test(cleanSentence)) {
+    if (/^Is (we|you|they|these|those)/.test(cleanSentence)) {
       errors.push("'We', 'You', 'They' should use 'Are', not 'Is'.");
       isValid = false;
     }
-    if (/^Is I/i.test(cleanSentence)) {
+    if (/^Is I/.test(cleanSentence)) {
       errors.push("'I' should use 'Am', not 'Is'.");
       isValid = false;
     }
   }
 
   if (hasAre) {
-    if (/^Are (he|she|it|this|that|I)/i.test(cleanSentence)) {
+    if (/^Are (he|she|it|this|that|I)/.test(cleanSentence)) {
       errors.push("'He', 'She', 'It', 'I' should not use 'Are' — use 'Is' or 'Am'.");
       isValid = false;
     }
   }
 
-  if (/(was|were)/i.test(cleanSentence)) {
+  if (/(was|were)/.test(cleanSentence)) {
     errors.push("This sentence is in past tense, not present. Use 'am', 'is', or 'are' for present tense interrogative.");
     isValid = false;
   }
 
-  if (/(am not|is not|are not|am't|isn't|aren't)/i.test(cleanSentence)) {
+  if (/(am not|is not|are not|am't|isn't|aren't)/.test(cleanSentence)) {
     errors.push("This sentence seems negative. For simple present interrogative remove 'not' (or use the correct negative question form).");
     isValid = false;
   }
 
-  const theMatch = cleanSentence.match(/^(Is|Are) the ([a-z]+) /i);
+  const theMatch = cleanSentence.match(/^(Is|Are) the ([a-z]+) /);
   if (theMatch) {
     const verb = theMatch[1];
     const noun = theMatch[2];
