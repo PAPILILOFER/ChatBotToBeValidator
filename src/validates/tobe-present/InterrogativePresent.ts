@@ -97,8 +97,8 @@ export function validateInterrogativePresent(sentence: string): ValidationResult
 
   const theMatch = cleanSentence.match(/^(Is|Are) the ([a-z]+) /i);
   if (theMatch) {
-    const verb = theMatch[1].toLowerCase();
-    const noun = theMatch[2].toLowerCase();
+    const verb = theMatch[1];
+    const noun = theMatch[2];
     const isPlural = /^[a-z]+s$/.test(noun);
     if (isPlural && verb === "is") {
       errors.push(`'The ${noun}' is plural, so use 'Are', not 'Is'`);
